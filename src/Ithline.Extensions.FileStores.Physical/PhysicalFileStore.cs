@@ -26,6 +26,7 @@ public sealed class PhysicalFileStore : IBlobFileStore
         _root = fullRoot;
     }
 
+    /// <inheritdoc/>
     public Task<IBlobFile?> GetFileAsync(string path)
     {
         if (string.IsNullOrEmpty(path) || PathUtils.HasInvalidPathChars(path))
@@ -50,6 +51,7 @@ public sealed class PhysicalFileStore : IBlobFileStore
         return Task.FromResult<IBlobFile?>(new PhysicalFile(fileInfo));
     }
 
+    /// <inheritdoc/>
     public IDirectoryContents GetDirectoryContentsAsync(string path, bool includeSubDirectories = false)
     {
         if (string.IsNullOrEmpty(path) || PathUtils.HasInvalidPathChars(path))
@@ -74,6 +76,7 @@ public sealed class PhysicalFileStore : IBlobFileStore
         return new PhysicalDirectory(directoryInfo, includeSubDirectories);
     }
 
+    /// <inheritdoc/>
     public async Task<IBlobFile> CreateFileAsync(string path, Stream stream, bool overwrite = false)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -101,6 +104,7 @@ public sealed class PhysicalFileStore : IBlobFileStore
         return new PhysicalFile(fileInfo);
     }
 
+    /// <inheritdoc/>
     public Task<bool> DeleteFileAsync(string path)
     {
         path = PathUtils.TrimSeparators(path);
