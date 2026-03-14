@@ -1,12 +1,12 @@
 namespace Ithline.Extensions.FileStores.Physical;
 
-internal sealed class NotFoundDirectoryContents : IDirectoryContents
+internal sealed class NotFoundDirectoryContents : IBlobDirectoryContents
 {
     private NotFoundDirectoryContents()
     {
     }
 
-    public static IDirectoryContents Singleton { get; } = new NotFoundDirectoryContents();
+    public static IBlobDirectoryContents Singleton { get; } = new NotFoundDirectoryContents();
 
     public async IAsyncEnumerator<IBlobFile> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {

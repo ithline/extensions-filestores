@@ -1,10 +1,10 @@
 namespace Ithline.Extensions.FileStores.Physical;
 
-internal sealed class PhysicalFile : IBlobFile
+internal sealed class PhysicalBlobFile : IBlobFile
 {
     private readonly FileInfo _info;
 
-    public PhysicalFile(FileInfo info)
+    public PhysicalBlobFile(FileInfo info)
     {
         _info = info;
     }

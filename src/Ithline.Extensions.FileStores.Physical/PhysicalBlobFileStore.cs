@@ -3,16 +3,16 @@ namespace Ithline.Extensions.FileStores.Physical;
 /// <summary>
 /// Represents a file store backed by file system.
 /// </summary>
-public sealed class PhysicalFileStore : IBlobFileStore
+public sealed class PhysicalBlobFileStore : IBlobFileStore
 {
     private readonly string _root;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PhysicalFileStore"/> with the specified root path.
+    /// Initializes a new instance of the <see cref="PhysicalBlobFileStore"/> with the specified root path.
     /// </summary>
     /// <param name="root">The root directory used to store files.</param>
     /// <exception cref="ArgumentException"><paramref name="root"/> is <see langword="null"/>, empty string, contains only white-space characters or is not a rooted path.</exception>
-    public PhysicalFileStore(string root)
+    public PhysicalBlobFileStore(string root)
     {
         if (!Path.IsPathRooted(root))
         {
@@ -48,11 +48,11 @@ public sealed class PhysicalFileStore : IBlobFileStore
             return Task.FromResult<IBlobFile?>(null);
         }
 
-        return Task.FromResult<IBlobFile?>(new PhysicalFile(fileInfo));
+        return Task.FromResult<IBlobFile?>(new PhysicalBlobFile(fileInfo));
     }
 
     /// <inheritdoc/>
-    public IDirectoryContents GetDirectoryContentsAsync(string path, bool includeSubDirectories = false)
+    public IBlobDirectoryContents GetDirectoryContentsAsync(string path, bool includeSubDirectories = false)
     {
         if (string.IsNullOrEmpty(path) || PathUtils.HasInvalidPathChars(path))
         {
@@ -73,7 +73,33 @@ public sealed class PhysicalFileStore : IBlobFileStore
             return NotFoundDirectoryContents.Singleton;
         }
 
-        return new PhysicalDirectory(directoryInfo, includeSubDirectories);
+        return new PhysicalBlobDirectory(directoryInfo, includeSubDirectories);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IBlobFile> CreateFileAsync(string path, ReadOnlyMemory<byte> buffer, bool overwrite = false)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+
+        path = PathUtils.TrimSeparators(path);
+        var fullPath = this.GetFullPath(path) ?? throw new ArgumentException("Path cannot be rooted or navigate above the store root.", nameof(path));
+
+        var fileInfo = new FileInfo(fullPath);
+        if (!overwrite && fileInfo.Exists)
+        {
+            throw new ArgumentException($"File '{path}' already exists.", nameof(path));
+        }
+
+        // we ensure directory exists
+        fileInfo.Directory?.Create();
+
+        using (var fs = fileInfo.Create())
+        {
+            await fs.WriteAsync(buffer).ConfigureAwait(false);
+            await fs.FlushAsync().ConfigureAwait(false);
+        }
+
+        return new PhysicalBlobFile(fileInfo);
     }
 
     /// <inheritdoc/>
@@ -86,14 +112,13 @@ public sealed class PhysicalFileStore : IBlobFileStore
         var fullPath = this.GetFullPath(path) ?? throw new ArgumentException("Path cannot be rooted or navigate above the store root.", nameof(path));
 
         var fileInfo = new FileInfo(fullPath);
-
-        // we ensure directory exists
-        fileInfo.Directory?.Create();
-
         if (!overwrite && fileInfo.Exists)
         {
             throw new ArgumentException($"File '{path}' already exists.", nameof(path));
         }
+
+        // we ensure directory exists
+        fileInfo.Directory?.Create();
 
         using (var fs = fileInfo.Create())
         {
@@ -101,7 +126,7 @@ public sealed class PhysicalFileStore : IBlobFileStore
             await fs.FlushAsync().ConfigureAwait(false);
         }
 
-        return new PhysicalFile(fileInfo);
+        return new PhysicalBlobFile(fileInfo);
     }
 
     /// <inheritdoc/>

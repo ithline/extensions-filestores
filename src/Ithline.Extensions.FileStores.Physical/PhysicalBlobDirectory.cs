@@ -1,11 +1,11 @@
 namespace Ithline.Extensions.FileStores.Physical;
 
-internal sealed class PhysicalDirectory : IBlobFile, IDirectoryContents
+internal sealed class PhysicalBlobDirectory : IBlobFile, IBlobDirectoryContents
 {
     private readonly DirectoryInfo _info;
     private readonly bool _includeSubDirectories;
 
-    public PhysicalDirectory(DirectoryInfo info, bool includeSubDirectories)
+    public PhysicalBlobDirectory(DirectoryInfo info, bool includeSubDirectories)
     {
         _info = info ?? throw new ArgumentNullException(nameof(info));
         _includeSubDirectories = includeSubDirectories;
@@ -42,11 +42,11 @@ internal sealed class PhysicalDirectory : IBlobFile, IDirectoryContents
         {
             if (entry is FileInfo file)
             {
-                yield return new PhysicalFile(file);
+                yield return new PhysicalBlobFile(file);
             }
             else if (entry is DirectoryInfo dir)
             {
-                yield return new PhysicalDirectory(dir, _includeSubDirectories);
+                yield return new PhysicalBlobDirectory(dir, _includeSubDirectories);
             }
             else
             {

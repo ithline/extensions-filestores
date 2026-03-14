@@ -18,7 +18,15 @@ public interface IBlobFileStore
     /// <param name="path">The path of the directory to enumerate, or <see langword="null" /> to enumerate the root of the file store.</param>
     /// <param name="includeSubDirectories">A flag to indicate whether to get the contents from just the top directory or from all sub-directories as well.</param>
     /// <returns>The list of files and directories in the given directory.</returns>
-    public IDirectoryContents GetDirectoryContentsAsync(string path, bool includeSubDirectories = false);
+    public IBlobDirectoryContents GetDirectoryContentsAsync(string path, bool includeSubDirectories = false);
+
+    /// <summary>
+    /// Creates a new file in the file store from the contents of an input stream.
+    /// </summary>
+    /// <param name="path">The path of the file to be created.</param>
+    /// <param name="buffer">The byte array whose contents to write to the new file.</param>
+    /// <param name="overwrite"><see langword="true" /> to overwrite if a file already exists; <see langword="false" /> to throw an exception if the file already exists.</param>
+    public Task<IBlobFile> CreateFileAsync(string path, ReadOnlyMemory<byte> buffer, bool overwrite = false);
 
     /// <summary>
     /// Creates a new file in the file store from the contents of an input stream.
